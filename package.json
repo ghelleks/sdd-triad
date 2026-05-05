@@ -1,0 +1,24 @@
+{
+  "name": "sdd-triad",
+  "version": "1.0.0",
+  "description": "Spec-driven development skills and agents — the SDD Triad write/evaluate loop, authoring skills, and Deming coaching agent",
+  "scripts": {
+    "install-skills": "bash scripts/install-skills.sh",
+    "install-agents": "bash scripts/install-agents.sh",
+    "install": "bash scripts/install-skills.sh && bash scripts/install-agents.sh"
+  },
+  "keywords": [
+    "sdd",
+    "spec-driven-development",
+    "agent-skills",
+    "cursor",
+    "claude",
+    "ai-agents"
+  ],
+  "author": "Gunnar Hellekson",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ghelleks/sdd-triad.git"
+  }
+}
