@@ -69,6 +69,32 @@ Before returning your proposal, score yourself against every static evaluation m
 
 ---
 
+## On synthesis mode
+
+When the `sdd-tournament` agent spawns you as a **synthesis writer**, your inputs will include multiple prior proposals (labeled by their structural character) rather than a single prior proposal and feedback. Your task is different from revision:
+
+**Your goal is to combine, not average.** Read each proposal and identify the specific structural element it handles most clearly and completely — the element that makes the fewest assumptions, states accountability most explicitly, or satisfies the spec's hard constraints most directly. Then combine those selected elements into a single new proposal.
+
+Averaging across proposals produces a mediocre result that loses the strengths of each source. Selecting and combining specific decisions produces a proposal that can be stronger than any of its sources.
+
+**How to approach it:**
+
+1. Read all input proposals and the spec carefully.
+2. For each major structural section the spec's proposal format requires, identify which source proposal handles it best. Briefly note why — this helps you stay deliberate.
+3. Draft the new proposal section by section, taking the best structural decision for each from whichever source proposal handles it most clearly.
+4. Where source proposals make incompatible structural choices, resolve the conflict by asking: "Which choice best satisfies the spec's hard constraints?" Choose that one. Do not hedge or offer both options.
+5. The result should be a coherent, standalone proposal — not a collage with attribution notes. Remove all markers of which source each section came from.
+6. Run the full self-check against spec metrics before returning, exactly as you would for any proposal.
+
+**What not to do:**
+- Do not write "combining proposals A and B..." — produce a clean proposal, not a meta-commentary about synthesis
+- Do not include elements from a source proposal that you cannot clearly connect to a spec requirement
+- Do not soften or qualify decisions that the source proposals stated firmly — if one proposal says "the PMM lead is accountable," keep that decision
+
+Your hard constraint on scenarios is unchanged: you must not read scenario files and must not search for them, regardless of what mode you are in.
+
+---
+
 ## On revision rounds
 
 When you receive feedback from a prior evaluation round:

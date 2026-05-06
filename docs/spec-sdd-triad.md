@@ -1,7 +1,7 @@
 # SDD Triad — Spec-Driven Proposal System
 
 **Last updated:** 2026-04-15  
-**Agents:** `sdd-orchestrator`, `sdd-writer`, `sdd-evaluator`  
+**Agents:** `sdd-orchestrator`, `sdd-tournament`, `sdd-writer`, `sdd-evaluator`  
 **Companion:** `sdd-coach` (alias: Deming) — describes the philosophy; this document describes the implementation
 
 ---
@@ -199,6 +199,84 @@ Every proposal and evaluation is persisted per-round so you can trace the evolut
 | `proposals/evaluation-summary.md` | Round-by-round scorecard table, stall flags, recommendations |
 
 Round artifacts are written as they are produced — not deferred until the loop ends. If the loop is interrupted, every artifact produced up to that point is on disk.
+
+---
+
+## Tournament invocation
+
+The `sdd-tournament` agent runs a multi-generation evolutionary loop over proposals. It uses the same information barrier as the orchestrator but adds diversity seeding, cross-generation selection, and synthesis. Use it when you want the strongest possible proposal rather than the first one that converges.
+
+### The pattern
+
+This is a genetic algorithm applied to proposal generation:
+
+| Genetic Algorithm term | SDD Tournament |
+|---|---|
+| Population | All proposals in a generation |
+| Mutation | Individual write/evaluate/revise loop per proposal |
+| Fitness function | Evaluator scorecard |
+| Selection | Rank by stress tests → use cases → anti-pattern risks; keep top K |
+| Crossover | Synthesis writers: read top proposals + spec, produce hybrids |
+| Generation | One full improve → score → select → synthesize cycle |
+| Champion | Proposal meeting the champion threshold (higher bar than normal convergence) |
+
+### Parameters
+
+Parameters shared with the orchestrator (`spec_file`, `scenarios_file`, `context_files`, `max_rounds`, `output_dir`) behave identically. Additional parameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `population_size` | 5 | Writers spawned in generation 1 |
+| `survivors_per_gen` | 2 | Proposals carried forward after selection |
+| `num_hybrids` | 2 | Synthesis writers spawned per generation |
+| `max_generations` | 3 | Maximum generational cycles |
+| `champion_threshold` | "all stress tests pass and 100% of use cases pass and 0 anti-pattern risks" | Bar to declare a winner |
+
+### Generation 1 — diversity seeding
+
+The tournament agent reads the spec and identifies 2–3 structural dimensions on which valid proposals could differ. It generates one interpretive angle per writer — one writer always gets no seed (pure spec-driven baseline). Seeds nudge writers toward structurally different interpretations without revealing evaluation criteria. The information barrier is unaffected.
+
+### Individual improvement (every generation)
+
+Each proposal in the population goes through its own independent write/evaluate/revise loop (up to `max_rounds`), identical to the orchestrator's inner loop. All proposals' improvement loops run in parallel within a generation.
+
+### Selection
+
+After all proposals are individually improved, rank by scorecard:
+1. Stress tests passed (descending)
+2. Use cases passed (descending)
+3. Anti-pattern risks flagged (ascending — fewer is better)
+
+Keep the top `survivors_per_gen` proposals. Drop the rest. Check every proposal against `champion_threshold` — if one meets it, declare it the champion and stop.
+
+### Synthesis
+
+If no champion is found and generations remain, spawn `num_hybrids` synthesis writers. Each receives the spec, context files, and the top surviving proposals — never the scenarios. Each synthesis writer is given a distinct combination strategy to ensure the hybrids are structurally diverse (not identical composites of the same sources).
+
+The `sdd-writer` agent handles synthesis using its synthesis mode instructions: identify the strongest structural element from each source proposal, select and combine those elements, resolve conflicts by checking spec hard constraints, produce a clean standalone proposal.
+
+### Output files
+
+| File | Contents |
+|------|----------|
+| `tournament/gen-{N}/initial/proposal-{letter}.md` | Initial proposals for generation N |
+| `tournament/gen-{N}/round-{R}/` | Per-round improvement artifacts |
+| `tournament/gen-{N}/final/proposal-{letter}.md` | Each proposal's best version after improvement |
+| `tournament/gen-{N}/selection.md` | Ranked scorecard table, survivors, dropped |
+| `tournament/gen-{N}/synthesis-{letter}.md` | Hybrid proposals for the next generation |
+| `tournament/champion.md` | Winning proposal (if champion threshold met) |
+| `tournament/best-available.md` | Highest-ranked final proposal (if no champion) |
+| `tournament/tournament-summary.md` | Full cross-generation scorecard history and recommendations |
+
+### When to use tournament vs. orchestrator
+
+| | Orchestrator | Tournament |
+|---|---|---|
+| Goal | First converging proposal | Best possible proposal |
+| Generations | 1 | Up to `max_generations` |
+| Between rounds | Revise based on feedback | Revise, then synthesize survivors |
+| Stops when | Proposals converge or `max_rounds` | Champion found or generations exhausted |
+| Best for | Routine runs | High-stakes decisions, important specs |
 
 ---
 

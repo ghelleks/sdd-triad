@@ -32,15 +32,15 @@ Skills execute one coherent task with a well-defined input → output contract. 
 
 ### Agents
 
-Agents either have a distinct conversational identity, make routing/dispatch decisions, or require state isolation (a clean context window that cannot inherit the parent's working memory). All four components below qualify as agents — but for different reasons.
+Agents either have a distinct conversational identity, make routing/dispatch decisions, or require state isolation (a clean context window that cannot inherit the parent's working memory). All five components below qualify as agents — but for different reasons.
 
-
-| Agent                  | Why it's an agent                                                                                                                                                                                                                                                                                                                                            |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `sdd-coach` ("Deming") | **Conversational identity.** A named persona grounded in human factors, cognitive systems engineering, manufacturing theory, and value stream thinking. Coaches teams on SDD adoption, spec quality, and the organizational conditions that produce thin specs.                                                                                              |
-| `sdd-orchestrator`     | **Routes and dispatches.** Runs the write/evaluate loop: dispatches to `sdd-writer`, receives sanitized feedback from `sdd-evaluator`, decides whether to iterate or terminate. It is the only component that sees both sides of the information barrier.                                                                                                    |
-| `sdd-writer`           | **State isolation — information barrier.** The writer must not see evaluation scenarios. Running it as a separate agent ensures it starts from a clean context that cannot contain scenario content leaked from the orchestrator's working memory. If the writer saw the scenarios, passing a scenario would no longer mean the proposal genuinely works.    |
-| `sdd-evaluator`        | **State isolation — information barrier.** The evaluator sees the scenarios and scores the proposal against them. It must sanitize its feedback before returning it to the orchestrator so the writer cannot reconstruct scenario content from the feedback it receives in subsequent rounds. A separate context window enforces this sanitization boundary. |
+| Agent | Why it's an agent |
+|---|---|
+| `sdd-coach` ("Deming") | **Conversational identity.** A named persona grounded in human factors, cognitive systems engineering, manufacturing theory, and value stream thinking. Coaches teams on SDD adoption, spec quality, and the organizational conditions that produce thin specs. |
+| `sdd-orchestrator` | **Routes and dispatches.** Runs the write/evaluate loop: dispatches to `sdd-writer`, receives sanitized feedback from `sdd-evaluator`, decides whether to iterate or terminate. It is the only component that sees both sides of the information barrier. |
+| `sdd-tournament` | **Routes and dispatches — generational.** Runs a multi-generation evolutionary tournament: diversity seeding, individual improvement, tournament selection, synthesis/crossover, repeat until a champion emerges. Use when you want the strongest possible proposal, not just the first one that converges. |
+| `sdd-writer` | **State isolation — information barrier.** The writer must not see evaluation scenarios. Running it as a separate agent ensures it starts from a clean context that cannot contain scenario content leaked from the orchestrator's working memory. Also handles synthesis mode: when given multiple prior proposals by the tournament, combines the strongest structural elements from each. |
+| `sdd-evaluator` | **State isolation — information barrier.** The evaluator sees the scenarios and scores the proposal against them. It must sanitize its feedback before returning it to the orchestrator so the writer cannot reconstruct scenario content from the feedback it receives in subsequent rounds. A separate context window enforces this sanitization boundary. |
 
 
 ### Design documentation
@@ -60,9 +60,20 @@ Once installed, invoke components by name in your AI assistant:
 ```
 Use sdd-coach to review my spec for gaps
 Use sdd-orchestrator to run the triad loop against my spec and scenarios
+Use sdd-tournament to run an evolutionary tournament and find the best proposal
 Use sdd-spec-writer skill to help me write a spec
 Use sdd-scenario-writer skill to help me write evaluation scenarios
 ```
+
+**When to use `sdd-orchestrator` vs. `sdd-tournament`:**
+
+| | `sdd-orchestrator` | `sdd-tournament` |
+|---|---|---|
+| Goal | Converge proposals | Find the best possible proposal |
+| Population | 3 writers in parallel | 5 writers/generation × N generations |
+| Between rounds | Revise based on feedback | Revise, then synthesize survivors into hybrids |
+| Stops when | Proposals converge | Champion threshold met or generations exhausted |
+| Best for | Most runs | High-stakes decisions, important specs, long-lived proposals |
 
 ## Example: end-to-end walkthrough
 
@@ -177,6 +188,39 @@ scheduling/
 ```
 
 The spec and scenarios are the durable artifacts — they accumulate your domain knowledge across runs. The proposals are derived output that can be regenerated anytime.
+
+---
+
+### (Optional) Step 5 — Run the tournament to find the best proposal
+
+If you want the strongest possible on-call rotation — not just the first one that passes evaluation — use `sdd-tournament` instead of `sdd-orchestrator`. The tournament runs multiple generations, synthesizes the strongest elements from the best proposals into hybrids, and continues until one proposal clears a higher bar.
+
+```
+Use sdd-tournament with spec_file=scheduling/spec.md
+and scenarios_file=scheduling/scenarios.md
+```
+
+The tournament first reads the spec and identifies the structural dimensions along which valid rotations could differ (e.g., "seniority-weighted distribution" vs. "pure round-robin with exceptions"), then seeds a diverse population of 5 writers. After each generation, it reports progress:
+
+```
+Generation 1 complete.
+  Proposal A: 3/3 stress tests, 4/5 use cases, 0 risks — rank 1 / carried forward
+  Proposal B: 3/3 stress tests, 3/5 use cases, 1 risk — rank 2 / carried forward
+  Proposal C: 2/3 stress tests, 3/5 use cases, 2 risks — dropped
+  Proposal D: 2/3 stress tests, 2/5 use cases, 3 risks — dropped
+  Proposal E: 1/3 stress tests, 2/5 use cases, 3 risks — dropped
+No champion yet. Synthesizing hybrids from proposals A and B.
+```
+
+After synthesis, generation 2 runs the hybrids through the same improvement loop. If a proposal meets the champion threshold (all stress tests + 100% use cases + 0 risks), it's declared the champion:
+
+```
+Champion found — Generation 2, Synthesis A.
+Written to: scheduling/tournament/champion.md
+Full history in: scheduling/tournament/tournament-summary.md
+```
+
+The `tournament/` directory contains every proposal, every evaluation, every selection decision, and every synthesized hybrid — the full audit trail of how the champion emerged.
 
 ---
 

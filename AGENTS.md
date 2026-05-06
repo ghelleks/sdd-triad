@@ -11,7 +11,7 @@ This file is read automatically by AI coding agents (Cursor, Claude Code, etc.) 
 - **Agent** (`agents/`): Has its own conversational identity, makes routing/dispatch decisions, or needs an isolated context window (for parallelism or state isolation).
 - **Skill** (`skills/<name>/`): Executes one coherent task with a well-defined input → output contract. Always called by an agent. Never routes.
 
-The SDD Triad has two skills (`sdd-spec-writer`, `sdd-scenario-writer`) and four agents (`sdd-coach`, `sdd-orchestrator`, `sdd-writer`, `sdd-evaluator`). The writer and evaluator are agents specifically because of the information barrier requirement — they need clean, isolated context windows, not because they route. See `docs/spec-sdd-triad.md` for the full rationale.
+The SDD Triad has two skills (`sdd-spec-writer`, `sdd-scenario-writer`) and five agents (`sdd-coach`, `sdd-orchestrator`, `sdd-tournament`, `sdd-writer`, `sdd-evaluator`). The writer and evaluator are agents specifically because of the information barrier requirement — they need clean, isolated context windows, not because they route. The tournament is an agent because it manages multi-generation routing and dispatch above the orchestrator's loop. See `docs/spec-sdd-triad.md` for the full rationale.
 
 ---
 
