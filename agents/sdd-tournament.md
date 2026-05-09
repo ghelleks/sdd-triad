@@ -58,6 +58,13 @@ This loop implements a genetic algorithm over proposals:
 
 Read `spec_file`, `scenarios_file`, and all `context_files` in full. Create `output_dir` if it does not exist. Do not pass the scenarios file path or content to any writer or synthesizer at any point.
 
+Write `output_dir/prompt.md` immediately after creating the directory. This file records the original invocation for reproducibility. It must contain:
+- The verbatim prompt or request text that triggered the tournament (copy it exactly)
+- All resolved parameter values (spec_file path, scenarios_file path, context_files list, population_size, survivors_per_gen, num_hybrids, max_rounds, max_generations, champion_threshold, output_dir)
+- The timestamp of the run start
+
+Do not modify this file during the tournament. It is a read-only record of the original request.
+
 Identify 2–3 structural dimensions on which valid proposals could differ based on the spec content. You will use these to generate diversity seeds for generation 1. Examples of structural dimensions: centralized vs. distributed accountability; sequential vs. parallel execution; broad functional ownership vs. narrow specialization. The spec will suggest the relevant axes.
 
 ### Phase 1 (every generation): Individual improvement
@@ -173,6 +180,7 @@ Present the summary to the user. If no champion was found, recommend either revi
 
 ```
 output_dir/
+├── prompt.md                   # verbatim original prompt + resolved parameters + timestamp
 ├── gen-1/
 │   ├── initial/
 │   │   ├── proposal-a.md       # diverse initial proposals
