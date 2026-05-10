@@ -4,6 +4,24 @@ Spec-driven development skills and agents for AI coding assistants (Cursor, Clau
 
 ## Install
 
+### Claude Code plugin (recommended)
+
+Install directly from the marketplace using the `/plugin` command inside Claude Code:
+
+```
+/plugin install https://github.com/ghelleks/sdd-triad
+```
+
+Once installed, skills are invoked as `/sdd-triad:sdd-spec-writer` and `/sdd-triad:sdd-scenario-writer`. Agents appear in `/agents` as `sdd-coach`, `sdd-orchestrator`, `sdd-tournament`, `sdd-writer`, and `sdd-evaluator`.
+
+To test locally without installing:
+
+```bash
+claude --plugin-dir ./sdd-triad
+```
+
+### Script install (Cursor + Claude Code)
+
 ```bash
 npx skills add ghelleks/sdd-triad --all
 ```
@@ -63,6 +81,13 @@ Use sdd-orchestrator to run the triad loop against my spec and scenarios
 Use sdd-tournament to run an evolutionary tournament and find the best proposal
 Use sdd-spec-writer skill to help me write a spec
 Use sdd-scenario-writer skill to help me write evaluation scenarios
+```
+
+When using the Claude Code plugin, skills can also be invoked directly via slash commands:
+
+```
+/sdd-triad:sdd-spec-writer
+/sdd-triad:sdd-scenario-writer
 ```
 
 **When to use `sdd-orchestrator` vs. `sdd-tournament`:**
