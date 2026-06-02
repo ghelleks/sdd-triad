@@ -6,18 +6,27 @@ Spec-driven development skills and agents for AI coding assistants (Cursor, Clau
 
 ### Claude Code plugin (recommended)
 
-Install directly from the marketplace using the `/plugin` command inside Claude Code:
+Register the marketplace, then install the plugin:
 
-```
-/plugin install https://github.com/ghelleks/sdd-triad
+```bash
+claude plugin marketplace add https://github.com/ghelleks/sdd-triad
+claude plugin install sdd-triad
 ```
 
 Once installed, skills are invoked as `/sdd-triad:sdd-spec-writer` and `/sdd-triad:sdd-scenario-writer`. Agents appear in `/agents` as `sdd-coach`, `sdd-orchestrator`, `sdd-tournament`, `sdd-writer`, and `sdd-evaluator`.
 
+To uninstall:
+
+```bash
+claude plugin uninstall sdd-triad --scope user
+claude plugin marketplace remove sdd-triad
+```
+
 To test locally without installing:
 
 ```bash
-claude --plugin-dir ./sdd-triad
+claude plugin marketplace add ./.claude-plugin/marketplace.json
+claude plugin install sdd-triad
 ```
 
 ### Script install (Cursor + Claude Code)
