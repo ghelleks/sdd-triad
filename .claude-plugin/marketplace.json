@@ -1,0 +1,13 @@
+{
+  "name": "sdd-triad",
+  "owner": {
+    "name": "Gunnar Hellekson"
+  },
+  "plugins": [
+    {
+      "name": "sdd-triad",
+      "source": "./",
+      "description": "Spec-driven development skills and agents — the SDD Triad write/evaluate loop, authoring skills, and Deming coaching agent"
+    }
+  ]
+}
