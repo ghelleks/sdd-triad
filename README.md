@@ -25,8 +25,7 @@ claude plugin marketplace remove sdd-triad
 To test locally without installing:
 
 ```bash
-claude plugin marketplace add ./.claude-plugin/marketplace.json
-claude plugin install sdd-triad
+claude --plugin-dir ./sdd-triad
 ```
 
 ### Script install (Cursor + Claude Code)
