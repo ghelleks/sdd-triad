@@ -6,9 +6,7 @@
     "name": "Gunnar Hellekson"
   },
   "homepage": "https://github.com/ghelleks/sdd-triad",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ghelleks/sdd-triad.git"
-  },
-  "license": "MIT"
+  "repository": "https://github.com/ghelleks/sdd-triad.git",
+  "license": "MIT",
+  "skills": "./skills/"
 }
